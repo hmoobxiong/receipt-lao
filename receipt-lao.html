@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ລະບົບສ້າງໃບຮັບເງິນພາສາລາວ — ປ້ອນຂໍ້ມູນ, ເຊັນຊື່, ດາວໂຫລດ PDF ໄດ້ທັນທີ ບໍ່ຕ້ອງສ້າງບັນຊີ">
+  <meta name="keywords" content="ໃບຮັບເງິນ, receipt, ລາວ, lao, PDF">
+  <meta name="theme-color" content="#1a3a5c">
+  <meta property="og:title" content="ລະບົບໃບຮັບເງິນ">
+  <meta property="og:description" content="ສ້າງໃບຮັບເງິນພາສາລາວ ປ້ອນຂໍ້ມູນ · ເຊັນຊື່ · ດາວໂຫລດ PDF">
+  <meta property="og:type" content="website">
+  <title>ລະບົບໃບຮັບເງິນ | Lao Receipt Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Phetsarath+OT&family=Noto+Sans+Lao:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans Lao', 'Phetsarath OT', sans-serif;
+      background: #f5f3ef;
+      color: #1a1a1a;
+      min-height: 100vh;
+    }
+    a { color: inherit; }
+
+    /* ===== Header ===== */
+    .header {
+      background: #1a3a5c;
+      color: #fff;
+      padding: 20px 16px 18px;
+      text-align: center;
+    }
+    .header-icon { font-size: 28px; margin-bottom: 4px; }
+    .header h1 { font-size: 20px; font-weight: 600; letter-spacing: 0.3px; }
+    .header p { font-size: 13px; color: #9cb8d4; margin-top: 4px; }
+    .header-links { margin-top: 10px; display: flex; justify-content: center; gap: 14px; }
+    .header-links a { font-size: 12px; color: #9cb8d4; text-decoration: none; padding: 4px 10px; border: 1px solid #2a5580; border-radius: 20px; transition: all 0.2s; }
+    .header-links a:hover { background: #2a5580; color: #fff; }
+
+    /* ===== Main layout ===== */
+    .container { max-width: 560px; margin: 0 auto; padding: 16px; }
+    .section {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e8e4dd;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .section-title {
+      font-size: 14px; font-weight: 600; color: #1a3a5c;
+      margin-bottom: 14px; padding-bottom: 10px;
+      border-bottom: 1px solid #f0ede8;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-title-icon { font-size: 16px; }
+
+    /* ===== Form fields ===== */
+    .field { margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label { display: block; font-size: 13px; font-weight: 500; color: #444; margin-bottom: 5px; }
+    .label-opt { font-size: 11px; color: #999; font-weight: 400; }
+    .field-row { display: flex; align-items: center; justify-content: space-between; }
+    .char-count { font-size: 11px; color: #bbb; }
+
+    input[type="text"], input[type="date"], input[type="number"], textarea, select {
+      width: 100%;
+      font-family: inherit;
+      font-size: 14px;
+      padding: 9px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      color: #1a1a1a;
+      background: #fafaf9;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: #1a3a5c;
+      box-shadow: 0 0 0 3px rgba(26,58,92,0.1);
+      background: #fff;
+    }
+    textarea { resize: vertical; min-height: 60px; }
+
+    /* ===== Items ===== */
+    .items-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .items-header span { font-size: 14px; font-weight: 600; color: #1a3a5c; }
+    .add-btn {
+      font-family: inherit;
+      font-size: 13px; color: #1a3a5c; font-weight: 500;
+      background: #eaf0f7; border: 1px solid #c5d8eb;
+      border-radius: 20px; padding: 5px 12px;
+      cursor: pointer; display: flex; align-items: center; gap: 4px;
+      transition: all 0.15s;
+    }
+    .add-btn:hover { background: #d0e3f0; }
+    .add-btn:disabled { opacity: 0.4; cursor: default; }
+
+    .item-row {
+      background: #f9f8f6;
+      border: 1px solid #ece9e3;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .item-row-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .item-no { font-size: 12px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+    .remove-btn {
+      font-family: inherit;
+      font-size: 12px; color: #c0392b; background: none; border: none;
+      cursor: pointer; padding: 2px 6px; border-radius: 6px;
+      transition: background 0.15s;
+    }
+    .remove-btn:hover { background: #fce8e6; }
+
+    .item-amounts { display: flex; gap: 8px; margin-top: 8px; }
+    .amount-field { flex: 1; }
+    .amount-field.satang { flex: 0 0 90px; }
+    .amount-field label { font-size: 11px; color: #888; margin-bottom: 4px; display: block; }
+    .amount-field input { text-align: right; }
+
+    .total-bar {
+      margin-top: 12px; padding-top: 12px;
+      border-top: 1px solid #ece9e3;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .total-label { font-size: 13px; color: #666; }
+    .total-amount { font-size: 18px; font-weight: 600; color: #1a3a5c; }
+
+    /* ===== Signature ===== */
+    .sig-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .sig-header label { font-size: 13px; font-weight: 500; color: #444; }
+    .clear-btn {
+      font-family: inherit;
+      font-size: 12px; color: #c0392b; background: none; border: none;
+      cursor: pointer; padding: 2px 6px; border-radius: 6px;
+    }
+    .clear-btn:hover { background: #fce8e6; }
+    .sig-canvas-wrap {
+      border: 2px dashed #c5d8eb;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fff;
+    }
+    #sigCanvas { display: block; width: 100%; height: 160px; touch-action: none; cursor: crosshair; }
+    .sig-hint { font-size: 11px; color: #aaa; text-align: center; margin-top: 6px; }
+
+    /* ===== Buttons ===== */
+    .submit-btn {
+      font-family: inherit;
+      width: 100%; padding: 14px;
+      background: #1a3a5c; color: #fff;
+      border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: all 0.15s;
+      margin-bottom: 10px;
+    }
+    .submit-btn:hover { background: #122b45; }
+    .submit-btn:active { transform: scale(0.98); }
+
+    .download-again-btn {
+      font-family: inherit;
+      width: 100%; padding: 11px;
+      background: transparent; color: #1a3a5c;
+      border: 1px solid #c5d8eb; border-radius: 10px;
+      font-size: 14px; font-weight: 500;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: all 0.15s;
+      margin-bottom: 10px;
+    }
+    .download-again-btn:hover { background: #eaf0f7; }
+    .hidden { display: none !important; }
+
+    /* ===== Toast ===== */
+    .toast {
+      position: fixed; bottom: 20px; right: 16px;
+      padding: 12px 18px; border-radius: 10px;
+      color: #fff; font-size: 14px; font-weight: 500;
+      z-index: 9999; max-width: 300px;
+      transform: translateY(60px); opacity: 0;
+      transition: all 0.28s cubic-bezier(.4,0,.2,1);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #1a7a50; }
+    .toast.error { background: #c0392b; }
+    .toast.info { background: #1a3a5c; }
+    .toast.warning { background: #c88b00; }
+
+    /* ===== Loading overlay ===== */
+    .loading-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(255,255,255,0.88);
+      z-index: 9998; flex-direction: column;
+      align-items: center; justify-content: center; gap: 14px;
+    }
+    .loading-overlay.show { display: flex; }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid #e0ddd7;
+      border-top-color: #1a3a5c;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 14px; color: #555; }
+
+    /* ===== Footer ===== */
+    .footer { text-align: center; font-size: 12px; color: #aaa; padding: 20px 0 30px; }
+
+    /* ===== Preview section (receipt display) ===== */
+    .receipt-preview {
+      background: #fffef9;
+      border: 1px solid #e8e0cc;
+      border-radius: 12px;
+      padding: 20px;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+    .receipt-preview h2 {
+      text-align: center; font-size: 16px; font-weight: 700;
+      margin-bottom: 4px; color: #1a1a1a;
+    }
+    .receipt-preview .receipt-subtitle {
+      text-align: center; font-size: 12px; color: #888; margin-bottom: 16px;
+    }
+    .receipt-row { display: flex; gap: 8px; margin-bottom: 4px; }
+    .receipt-row .label { color: #666; min-width: 130px; flex-shrink: 0; }
+    .receipt-row .value { color: #1a1a1a; font-weight: 500; }
+    .receipt-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+    .receipt-table th { background: #f5f3ef; text-align: left; padding: 6px 8px; border-bottom: 1px solid #e0ddd7; }
+    .receipt-table td { padding: 5px 8px; border-bottom: 1px solid #f0ede8; }
+    .receipt-table .right { text-align: right; }
+    .receipt-total { display: flex; justify-content: space-between; padding: 8px 0; border-top: 2px solid #1a3a5c; margin-top: 4px; }
+    .receipt-total .label { font-weight: 600; color: #1a1a1a; }
+    .receipt-total .value { font-weight: 700; color: #1a3a5c; font-size: 16px; }
+    .amount-words { background: #eaf0f7; border-radius: 6px; padding: 8px 12px; font-size: 13px; color: #1a3a5c; margin-top: 8px; }
+    .sig-area { margin-top: 20px; text-align: center; padding-top: 12px; border-top: 1px dashed #ddd; }
+    .sig-area img { max-height: 80px; max-width: 220px; }
+    .sig-area .sig-name { font-size: 13px; color: #444; margin-top: 4px; }
+
+    /* ===== Tab navigation ===== */
+    .tabs { display: flex; background: #fff; border-radius: 10px; border: 1px solid #e8e4dd; padding: 4px; margin-bottom: 14px; gap: 4px; }
+    .tab-btn {
+      font-family: inherit;
+      flex: 1; padding: 9px 8px; font-size: 13px; font-weight: 500;
+      border: none; border-radius: 8px; cursor: pointer;
+      transition: all 0.15s; color: #666; background: transparent;
+    }
+    .tab-btn.active { background: #1a3a5c; color: #fff; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    @media (max-width: 420px) {
+      .header h1 { font-size: 18px; }
+      .item-amounts { flex-wrap: wrap; }
+      .amount-field.satang { flex: 0 0 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-icon">📄</div>
+    <h1>ລະບົບໃບຮັບເງິນ</h1>
+    <p>ປ້ອນຂໍ້ມູນ · ເຊັນຊື່ · ດາວໂຫລດ PDF</p>
+    <div class="header-links">
+      <a href="#" onclick="switchTab('form'); return false;">ສ້າງໃບຮັບເງິນ</a>
+      <a href="#" onclick="switchTab('preview'); return false;">ເບິ່ງຕົວຢ່າງ</a>
+      <a href="#" onclick="switchTab('manual'); return false;">ຄູ່ມືນຳໃຊ້</a>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- Tab buttons -->
+    <div class="tabs">
+      <button class="tab-btn active" id="tab-form" onclick="switchTab('form')">📝 ປ້ອນຂໍ້ມູນ</button>
+      <button class="tab-btn" id="tab-preview" onclick="switchTab('preview')">👁 ຕົວຢ່າງ</button>
+      <button class="tab-btn" id="tab-manual" onclick="switchTab('manual')">📖 ຄູ່ມື</button>
+    </div>
+
+    <!-- ===== FORM TAB ===== -->
+    <div class="tab-panel active" id="panel-form">
+
+      <!-- ຂໍ້ມູນທົ່ວໄປ -->
+      <div class="section">
+        <div class="section-title">
+          <span class="section-title-icon">📋</span>
+          ຂໍ້ມູນທົ່ວໄປ
+        </div>
+
+        <div class="field">
+          <div class="field-row">
+            <label for="place">ທີ່ (ສະຖານທີ່ຂຽນ)</label>
+            <span class="char-count" id="placeCounter">0/40</span>
+          </div>
+          <input type="text" id="place" maxlength="40" placeholder="ເຊັ່ນ: ນະຄອນຫຼວງວຽງຈັນ">
+        </div>
+
+        <div class="field">
+          <label for="docDate">ວັນທີ</label>
+          <input type="date" id="docDate">
+        </div>
+
+        <div class="field">
+          <label for="sellerName">ຊື່ຜູ້ຂາຍ / ຜູ້ຮັບເງິນ</label>
+          <input type="text" id="sellerName" placeholder="ຊື່-ນາມສະກຸນ ຜູ້ຮັບເງິນ">
+        </div>
+
+        <div class="field">
+          <label for="sellerId">ເລກປະຈຳຕົວ <span class="label-opt">(ບໍ່ຈຳເປັນ)</span></label>
+          <input type="text" id="sellerId" placeholder="ເລກບັດປະຈຳຕົວ / ທະບຽນ">
+        </div>
+
+        <div class="field">
+          <label for="sellerAddress">ທີ່ຢູ່ຜູ້ຂາຍ <span class="label-opt">(ບໍ່ຈຳເປັນ)</span></label>
+          <textarea id="sellerAddress" rows="2" placeholder="ທີ່ຢູ່ຜູ້ຮັບເງິນ"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="buyer">ຜູ້ຊື້ / ຜູ້ຈ່າຍເງິນ</label>
+          <input type="text" id="buyer" placeholder="ຊື່ຜູ້ຈ່າຍເງິນ / ໜ່ວຍງານ">
+        </div>
+      </div>
+
+      <!-- ລາຍການ -->
+      <div class="section">
+        <div class="items-header">
+          <span>📦 ລາຍການ</span>
+          <button class="add-btn" id="addItemBtn" onclick="addItem()">＋ ເພີ່ມລາຍການ</button>
+        </div>
+        <div id="itemsContainer"></div>
+        <div class="total-bar">
+          <span class="total-label">ຍອດລວມ</span>
+          <span class="total-amount" id="totalDisplay">0.00 ກີບ</span>
+        </div>
+      </div>
+
+      <!-- ລາຍເຊັນ -->
+      <div class="section">
+        <div class="sig-header">
+          <label>✍️ ລາຍເຊັນຜູ້ຮັບເງິນ</label>
+          <button class="clear-btn" onclick="clearSig()">ລຶບ</button>
+        </div>
+        <div class="sig-canvas-wrap">
+          <canvas id="sigCanvas"></canvas>
+        </div>
+        <p class="sig-hint">ເຊັນໃນກ່ອງດ້ວຍນິ້ວ (ໂທລະສັບ) ຫຼື ເມົາ (ຄອມພິວເຕີ)</p>
+      </div>
+
+      <!-- ປຸ່ມ -->
+      <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
+        🖨️ ສ້າງໃບຮັບເງິນ (PDF)
+      </button>
+      <button class="download-again-btn hidden" id="downloadAgainBtn" onclick="downloadAgain()">
+        ⬇️ ດາວໂຫລດ PDF ອີກຄັ້ງ
+      </button>
+
+    </div>
+
+    <!-- ===== PREVIEW TAB ===== -->
+    <div class="tab-panel" id="panel-preview">
+      <div class="section">
+        <div class="section-title">
+          <span class="section-title-icon">👁</span>
+          ຕົວຢ່າງໃບຮັບເງິນ
+        </div>
+        <div id="previewContent">
+          <p style="color:#aaa; font-size:13px; text-align:center; padding: 20px 0;">ຍັງບໍ່ມີຂໍ້ມູນ — ປ້ອນຂໍ້ມູນໃນໜ້າ "ປ້ອນຂໍ້ມູນ" ກ່ອນ</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MANUAL TAB ===== -->
+    <div class="tab-panel" id="panel-manual">
+      <div class="section">
+        <div class="section-title"><span>📖</span> ວິທີນຳໃຊ້</div>
+        <div style="font-size:14px; line-height:1.9; color:#333;">
+          <p style="margin-bottom:12px;"><strong style="color:#1a3a5c;">1. ປ້ອນຂໍ້ມູນທົ່ວໄປ</strong><br>ກຣອກທີ່, ວັນທີ, ຊື່ຜູ້ຂາຍ, ຜູ້ຊື້ ໃຫ້ຄົບ. ຊ່ອງທີ່ມີ "(ບໍ່ຈຳເປັນ)" ສາມາດວ່າງໄດ້.</p>
+          <p style="margin-bottom:12px;"><strong style="color:#1a3a5c;">2. ເພີ່ມລາຍການ</strong><br>ກົດ "ເພີ່ມລາຍການ" ເພື່ອເພີ່ມສິນຄ້າ/ບໍລິການ. ລະບົບຮອງຮັບສູງສຸດ 10 ລາຍການ. ຕ້ອງໃສ່ຈຳນວນກີບ ≥ 1 ທຸກລາຍການ.</p>
+          <p style="margin-bottom:12px;"><strong style="color:#1a3a5c;">3. ເຊັນລາຍເຊັນ</strong><br>ເຊັນໃນກ່ອງດ້ວຍນິ້ວ ຫຼື ເມົາ. ກົດ "ລຶບ" ຖ້າຕ້ອງການເຊັນໃໝ່.</p>
+          <p style="margin-bottom:12px;"><strong style="color:#1a3a5c;">4. ສ້າງ PDF</strong><br>ກົດ "ສ້າງໃບຮັບເງິນ (PDF)" — ໜ້າຈໍ Print ຈະເປີດຂຶ້ນ, ເລືອກ <strong>"Save as PDF"</strong> ແລ້ວກົດ Save ເພື່ອດາວໂຫລດ PDF. (ໃນ iPhone ເລືອກ Share → Save to Files)</p>
+          <p style="margin-bottom:12px;"><strong style="color:#1a3a5c;">5. ຕົວຢ່າງ</strong><br>ກົດໜ້າ "ຕົວຢ່າງ" ເພື່ອເບິ່ງໃບຮັບເງິນກ່ອນດາວໂຫລດ.</p>
+          <hr style="border:none; border-top:1px solid #eee; margin:16px 0;">
+          <p style="font-size:13px; color:#888;">ໝາຍເຫດ: ລະບົບນີ້ທຳງານໂດຍ Browser ທັງໝົດ ຂໍ້ມູນບໍ່ຖືກສ່ງຂຶ້ນ Server ໃດ.</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><span>📑</span> Placeholder ສຳລັບ Google Slides</div>
+        <p style="font-size:13px; color:#555; margin-bottom:12px;">ຖ້ານຳໃຊ້ Google Slides ເປັນ template ວາງ placeholder ເຫຼົ່ານີ້:</p>
+        <table style="width:100%; font-size:12px; border-collapse:collapse;">
+          <thead>
+            <tr style="background:#f5f3ef;">
+              <th style="padding:7px 10px; text-align:left; color:#555;">Placeholder</th>
+              <th style="padding:7px 10px; text-align:left; color:#555;">ຄ່າທີ່ໃສ່</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #f0ede8;"><td style="padding:6px 10px; font-family:monospace;">{{ທີ່}}</td><td style="padding:6px 10px;">ສະຖານທີ່ຂຽນ</td></tr>
+            <tr style="border-bottom:1px solid #f0ede8; background:#fafaf9;"><td style="padding:6px 10px; font-family:monospace;">{{ວັນທີ}}</td><td style="padding:6px 10px;">ວັນທີ ລາວ</td></tr>
+            <tr style="border-bottom:1px solid #f0ede8;"><td style="padding:6px 10px; font-family:monospace;">{{ຊື່ຜູ້ຂາຍ}}</td><td style="padding:6px 10px;">ຊື່ຜູ້ຮັບເງິນ</td></tr>
+            <tr style="border-bottom:1px solid #f0ede8; background:#fafaf9;"><td style="padding:6px 10px; font-family:monospace;">{{ຜູ້ຊື້}}</td><td style="padding:6px 10px;">ຊື່ຜູ້ຈ່າຍ</td></tr>
+            <tr style="border-bottom:1px solid #f0ede8;"><td style="padding:6px 10px; font-family:monospace;">{{ລາຍການ1}} ... {{ລາຍການ5}}</td><td style="padding:6px 10px;">ລາຍການ 1-5</td></tr>
+            <tr style="border-bottom:1px solid #f0ede8; background:#fafaf9;"><td style="padding:6px 10px; font-family:monospace;">{{ກີບ1}} ... {{ກີບ5}}</td><td style="padding:6px 10px;">ຈຳນວນກີບ</td></tr>
+            <tr style="border-bottom:1px solid #f0ede8;"><td style="padding:6px 10px; font-family:monospace;">{{ລວມກີບ}}</td><td style="padding:6px 10px;">ຍອດລວມ</td></tr>
+            <tr style="background:#eaf0f7;"><td style="padding:6px 10px; font-family:monospace;">{{ລາຍເຊັນຜູ້ຮັບເງິນ}}</td><td style="padding:6px 10px;">ຮູບລາຍເຊັນ</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="footer">
+      &copy; 2026 ລະບົບໃບຮັບເງິນລາວ — ຂໍ້ມູນບໍ່ຖືກສ່ງຂຶ້ນ Server ໃດ 🔒
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text" id="loadingText">ກຳລັງສ້າງເອກະສານ...</div>
+  </div>
+
+  <script>
+    /* ===========================
+       TAB NAVIGATION
+    =========================== */
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById('tab-' + name).classList.add('active');
+      document.getElementById('panel-' + name).classList.add('active');
+      if (name === 'preview') updatePreview();
+    }
+
+    /* ===========================
+       TOAST
+    =========================== */
+    function showToast(msg, type = 'info', dur = 3500) {
+      const t = document.createElement('div');
+      t.className = 'toast ' + type;
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.classList.add('show'), 10);
+      setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, dur);
+    }
+
+    function showLoading(txt) {
+      document.getElementById('loadingText').textContent = txt || 'ກຳລັງໂຫລດ...';
+      document.getElementById('loadingOverlay').classList.add('show');
+    }
+    function hideLoading() { document.getElementById('loadingOverlay').classList.remove('show'); }
+
+    /* ===========================
+       ITEMS
+    =========================== */
+    const MAX_ITEMS = 10;
+    let itemSeq = 0;
+
+    function addItem(desc = '', kip = '') {
+      const rows = document.querySelectorAll('.item-row');
+      if (rows.length >= MAX_ITEMS) { showToast('ສູງສຸດ ' + MAX_ITEMS + ' ລາຍການ', 'warning'); return; }
+      itemSeq++;
+      const div = document.createElement('div');
+      div.className = 'item-row';
+      div.dataset.id = itemSeq;
+      div.innerHTML = `
+        <div class="item-row-header">
+          <span class="item-no">ລາຍການທີ <span class="item-no-num"></span></span>
+          <button class="remove-btn" onclick="removeItem(this)">✕ ລຶບ</button>
+        </div>
+        <input type="text" class="item-desc" placeholder="ຊື່ລາຍການ / ສິນຄ້າ / ບໍລິການ" value="${desc}" oninput="">
+        <div class="item-amounts">
+          <div class="amount-field">
+            <label>ຈຳນວນ (ກີບ)</label>
+            <input type="number" class="item-kip" min="0" placeholder="0" value="${kip}" oninput="updateTotal()">
+          </div>
+        </div>
+      `;
+      document.getElementById('itemsContainer').appendChild(div);
+      renumber();
+      updateTotal();
+    }
+
+    function removeItem(btn) {
+      const rows = document.querySelectorAll('.item-row');
+      if (rows.length <= 1) return;
+      btn.closest('.item-row').remove();
+      renumber();
+      updateTotal();
+    }
+
+    function renumber() {
+      const rows = document.querySelectorAll('.item-row');
+      rows.forEach((row, i) => {
+        row.querySelector('.item-no-num').textContent = i + 1;
+        const rb = row.querySelector('.remove-btn');
+        rb.style.display = rows.length > 1 ? '' : 'none';
+      });
+      const addBtn = document.getElementById('addItemBtn');
+      addBtn.disabled = rows.length >= MAX_ITEMS;
+    }
+
+    function updateTotal() {
+      let total = 0;
+      document.querySelectorAll('.item-kip').forEach(inp => {
+        total += Math.floor(Number(inp.value) || 0);
+      });
+      document.getElementById('totalDisplay').textContent = addCommas(total) + ' ກີບ';
+    }
+
+    /* ===========================
+       UTILS
+    =========================== */
+    function addCommas(n) { return String(Math.floor(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+
+    function formatLaoDate(iso) {
+      if (!iso) return '';
+      const months = ['ມັງກອນ','ກຸມພາ','ມີນາ','ເມສາ','ພຶດສະພາ','ມິຖຸນາ',
+                      'ກໍລະກົດ','ສິງຫາ','ກັນຍາ','ຕຸລາ','ພະຈິກ','ທັນວາ'];
+      const [y, m, d] = iso.split('-').map(Number);
+      return `${d} ${months[m-1]} ${y + 543}`;
+    }
+
+    function laoNumber(num) {
+      num = Math.floor(Math.abs(num));
+      if (num === 0) return 'ສູນ';
+      if (num > 999999) {
+        const h = Math.floor(num / 1000000), l = num % 1000000;
+        return laoNumber(h) + 'ລ້ານ' + (l > 0 ? laoNumber(l) : '');
+      }
+      const d = ['','ໜຶ່ງ','ສອງ','ສາມ','ສີ','ຫ້າ','ຫົກ','ເຈັດ','ແປດ','ເກົ້າ'];
+      const p = ['','ສິບ','ຮ້ອຍ','ພັນ','ໝື່ນ','ແສນ'];
+      const s = String(num), len = s.length;
+      let res = '';
+      for (let i = 0; i < len; i++) {
+        const digit = parseInt(s[i], 10);
+        const pos = len - i - 1;
+        if (!digit) continue;
+        if (pos === 1 && digit === 1) { res += 'ສິບ'; }
+        else if (pos === 1 && digit === 2) { res += 'ຊາວ'; }
+        else { res += d[digit] + p[pos]; }
+      }
+      return res;
+    }
+
+    function kipText(kip) {
+      kip = Math.floor(kip);
+      if (kip === 0) return 'ສູນກີບ';
+      return laoNumber(kip) + 'ກີບຖ້ວນ';
+    }
+
+    function sanitize(v) { return (v == null ? '' : String(v)).trim(); }
+
+    /* ===========================
+       SIGNATURE PAD
+    =========================== */
+    let hasDrawn = false;
+    const canvas = document.getElementById('sigCanvas');
+    const ctx = canvas.getContext('2d');
+    let drawing = false, lx = 0, ly = 0;
+
+    function setupCanvas() {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.round(rect.width * ratio);
+      canvas.height = Math.round(rect.height * ratio);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(ratio, ratio);
+      ctx.lineWidth = 2.2;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = '#111';
+    }
+
+    function pointerPos(e) {
+      const r = canvas.getBoundingClientRect();
+      return { x: e.clientX - r.left, y: e.clientY - r.top };
+    }
+
+    canvas.addEventListener('pointerdown', e => {
+      drawing = true;
+      const p = pointerPos(e); lx = p.x; ly = p.y;
+      e.preventDefault();
+    });
+    canvas.addEventListener('pointermove', e => {
+      if (!drawing) return;
+      const p = pointerPos(e);
+      ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(p.x, p.y); ctx.stroke();
+      lx = p.x; ly = p.y; hasDrawn = true;
+      e.preventDefault();
+    });
+    window.addEventListener('pointerup', () => { drawing = false; });
+
+    function clearSig() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      hasDrawn = false;
+    }
+
+    /* ===========================
+       PLACE COUNTER
+    =========================== */
+    document.getElementById('place').addEventListener('input', function() {
+      document.getElementById('placeCounter').textContent = this.value.length + '/40';
+    });
+
+    /* ===========================
+       LIVE PREVIEW
+    =========================== */
+    function updatePreview() {
+      const place = sanitize(document.getElementById('place').value);
+      const dateISO = document.getElementById('docDate').value;
+      const sellerName = sanitize(document.getElementById('sellerName').value);
+      const sellerId = sanitize(document.getElementById('sellerId').value);
+      const sellerAddress = sanitize(document.getElementById('sellerAddress').value);
+      const buyer = sanitize(document.getElementById('buyer').value);
+
+      const items = [];
+      document.querySelectorAll('.item-row').forEach(row => {
+        const desc = sanitize(row.querySelector('.item-desc').value);
+        const kip = Math.floor(Number(row.querySelector('.item-kip').value) || 0);
+        if (desc || kip) items.push({ desc: desc || '—', kip });
+      });
+
+      const total = items.reduce((s, it) => s + it.kip, 0);
+      const sigSrc = hasDrawn ? canvas.toDataURL('image/png') : null;
+
+      const pc = document.getElementById('previewContent');
+      pc.innerHTML = `
+        <div class="receipt-preview">
+          <h2>ໃບຮັບເງິນ</h2>
+          <div class="receipt-subtitle">Receipt / Reçu</div>
+          <div class="receipt-row"><span class="label">ທີ:</span><span class="value">${place || '—'}</span></div>
+          <div class="receipt-row"><span class="label">ວັນທີ:</span><span class="value">${formatLaoDate(dateISO) || '—'}</span></div>
+          <div class="receipt-row"><span class="label">ຜູ້ຮັບເງິນ:</span><span class="value">${sellerName || '—'}</span></div>
+          ${sellerId ? `<div class="receipt-row"><span class="label">ເລກປະຈຳຕົວ:</span><span class="value">${sellerId}</span></div>` : ''}
+          ${sellerAddress ? `<div class="receipt-row"><span class="label">ທີ່ຢູ່:</span><span class="value">${sellerAddress}</span></div>` : ''}
+          <div class="receipt-row"><span class="label">ຜູ້ຈ່າຍ:</span><span class="value">${buyer || '—'}</span></div>
+          <table class="receipt-table">
+            <thead>
+              <tr><th>ລາຍການ</th><th class="right">ຈຳນວນ (ກີບ)</th></tr>
+            </thead>
+            <tbody>
+              ${items.length ? items.map(it => `<tr><td>${it.desc}</td><td class="right">${addCommas(it.kip)}</td></tr>`).join('') : '<tr><td colspan="2" style="color:#aaa;text-align:center;">ຍັງບໍ່ມີລາຍການ</td></tr>'}
+            </tbody>
+          </table>
+          <div class="receipt-total">
+            <span class="label">ຍອດລວມທັງໝົດ</span>
+            <span class="value">${addCommas(total)} ກີບ</span>
+          </div>
+          <div class="amount-words">💬 ${kipText(total)}</div>
+          ${sigSrc ? `
+          <div class="sig-area">
+            <img src="${sigSrc}" alt="ລາຍເຊັນ">
+            <div class="sig-name">ລາຍເຊັນຜູ້ຮັບເງິນ</div>
+          </div>` : '<div class="sig-area" style="color:#aaa;font-size:13px;">ຍັງບໍ່ມີລາຍເຊັນ</div>'}
+        </div>
+      `;
+    }
+
+    /* ===========================
+       PDF GENERATION (CLIENT-SIDE)
+    =========================== */
+    let lastPdfData = null;
+
+    function handleSubmit() {
+      const place = sanitize(document.getElementById('place').value);
+      const dateISO = document.getElementById('docDate').value;
+      const sellerName = sanitize(document.getElementById('sellerName').value);
+      const buyer = sanitize(document.getElementById('buyer').value);
+
+      if (!place) { showToast('ກະລຸນາປ້ອນ "ທີ"', 'error'); return; }
+      if (!dateISO) { showToast('ກະລຸນາເລືອກວັນທີ', 'error'); return; }
+      if (!sellerName) { showToast('ກະລຸນາປ້ອນຊື່ຜູ້ຂາຍ', 'error'); return; }
+      if (!buyer) { showToast('ກະລຸນາປ້ອນຜູ້ຊື້', 'error'); return; }
+
+      const items = [];
+      let valid = true;
+      document.querySelectorAll('.item-row').forEach(row => {
+        const desc = sanitize(row.querySelector('.item-desc').value);
+        const kip = Math.floor(Number(row.querySelector('.item-kip').value) || 0);
+        if (!desc && kip === 0) return;
+        if (!desc) { valid = false; return; }
+        if (kip <= 0) { valid = false; return; }
+        items.push({ desc, kip });
+      });
+
+      if (!items.length) { showToast('ຕ້ອງມີຢ່າງໜ້ອຍ 1 ລາຍການ', 'error'); return; }
+      if (!valid) { showToast('ກະລຸນາປ້ອນລາຍການ ແລະ ຈຳນວນເງິນໃຫ້ຖືກຕ້ອງ', 'error'); return; }
+      if (!hasDrawn) { showToast('ກະລຸນາເຊັນລາຍເຊັນຜູ້ຮັບເງິນ', 'error'); return; }
+
+      showLoading('ກຳລັງສ້າງໃບຮັບເງິນ...');
+
+      setTimeout(() => {
+        try {
+          generatePDF({
+            place, dateISO, sellerName,
+            sellerId: sanitize(document.getElementById('sellerId').value),
+            sellerAddress: sanitize(document.getElementById('sellerAddress').value),
+            buyer, items,
+            signature: canvas.toDataURL('image/png')
+          });
+        } catch(err) {
+          hideLoading();
+          showToast('ເກີດຂໍ້ຜິດພາດ: ' + err.message, 'error', 5000);
+        }
+      }, 100);
+    }
+
+    function generatePDF(data) {
+      // Build HTML receipt and print/save as PDF using the browser print dialog
+      const total = data.items.reduce((s, it) => s + it.kip, 0);
+      const html = `<!DOCTYPE html>
+<html lang="lo">
+<head>
+<meta charset="UTF-8">
+<title>ໃບຮັບເງິນ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans Lao', sans-serif; font-size: 13px; color: #111; padding: 30px 36px; }
+  h1 { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 4px; letter-spacing: 1px; }
+  .subtitle { text-align: center; color: #666; font-size: 11px; margin-bottom: 20px; }
+  .meta { margin-bottom: 16px; border-top: 2px solid #1a3a5c; border-bottom: 1px solid #ddd; padding: 10px 0; }
+  .meta-row { display: flex; gap: 8px; margin-bottom: 4px; }
+  .meta-row .lbl { color: #555; min-width: 140px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th { background: #1a3a5c; color: #fff; padding: 7px 10px; text-align: left; font-weight: 600; }
+  th.right { text-align: right; }
+  td { padding: 6px 10px; border-bottom: 1px solid #eee; }
+  td.right { text-align: right; }
+  .total-row { display: flex; justify-content: space-between; padding: 10px 10px; background: #eaf0f7; border-radius: 4px; margin-top: 4px; }
+  .total-row .lbl { font-weight: 700; font-size: 14px; }
+  .total-row .val { font-weight: 700; font-size: 16px; color: #1a3a5c; }
+  .words { background: #f5f3ef; border-radius: 4px; padding: 8px 12px; font-size: 12px; color: #444; margin-top: 8px; }
+  .sig-box { margin-top: 30px; text-align: right; }
+  .sig-box img { max-height: 70px; max-width: 200px; display: block; margin-left: auto; }
+  .sig-label { font-size: 12px; color: #555; margin-top: 4px; }
+  .border-top-sig { border-top: 1px solid #aaa; padding-top: 6px; margin-top: 12px; display: inline-block; min-width: 200px; text-align: center; }
+  @media print { body { padding: 15px 20px; } }
+</style>
+</head>
+<body>
+<h1>ໃບຮັບເງິນ</h1>
+<div class="subtitle">RECEIPT</div>
+<div class="meta">
+  <div class="meta-row"><span class="lbl">ທີ:</span><span>${data.place}</span></div>
+  <div class="meta-row"><span class="lbl">ວັນທີ:</span><span>${formatLaoDate(data.dateISO)}</span></div>
+  <div class="meta-row"><span class="lbl">ຜູ້ຮັບເງິນ:</span><span>${data.sellerName}</span></div>
+  ${data.sellerId ? `<div class="meta-row"><span class="lbl">ເລກປະຈຳຕົວ:</span><span>${data.sellerId}</span></div>` : ''}
+  ${data.sellerAddress ? `<div class="meta-row"><span class="lbl">ທີ່ຢູ່:</span><span>${data.sellerAddress}</span></div>` : ''}
+  <div class="meta-row"><span class="lbl">ຜູ້ຈ່າຍເງິນ:</span><span>${data.buyer}</span></div>
+</div>
+<table>
+  <thead><tr><th>ລາຍການ</th><th class="right">ຈຳນວນ (ກີບ)</th></tr></thead>
+  <tbody>
+    ${data.items.map(it => `<tr><td>${it.desc}</td><td class="right">${addCommas(it.kip)}</td></tr>`).join('')}
+  </tbody>
+</table>
+<div class="total-row">
+  <span class="lbl">ຍອດລວມທັງໝົດ</span>
+  <span class="val">${addCommas(total)} ກີບ</span>
+</div>
+<div class="words">ຈຳນວນເງິນ: ${kipText(total)}</div>
+<div class="sig-box">
+  <img src="${data.signature}" alt="ລາຍເຊັນ">
+  <div class="border-top-sig">
+    <div class="sig-label">ລາຍເຊັນຜູ້ຮັບເງິນ</div>
+  </div>
+</div>
+</body></html>`;
+
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+
+      // Open in new window and trigger print dialog (user saves as PDF)
+      const win = window.open(url, '_blank');
+      if (win) {
+        win.addEventListener('load', () => {
+          setTimeout(() => { win.print(); }, 400);
+        });
+      }
+
+      lastPdfData = { url, html };
+      setTimeout(() => URL.revokeObjectURL(url), 300000);
+
+      hideLoading();
+      document.getElementById('downloadAgainBtn').classList.remove('hidden');
+      showToast('ສ້າງສຳເລັດ! ກົດ "Save as PDF" ໃນ Print dialog', 'success', 5000);
+    }
+
+    function downloadAgain() {
+      if (!lastPdfData) return;
+      const blob = new Blob([lastPdfData.html], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const win = window.open(url, '_blank');
+      if (win) {
+        win.addEventListener('load', () => { setTimeout(() => { win.print(); }, 400); });
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 300000);
+    }
+
+    /* ===========================
+       INIT
+    =========================== */
+    (function init() {
+      const t = new Date();
+      const iso = t.getFullYear() + '-' +
+        String(t.getMonth()+1).padStart(2,'0') + '-' +
+        String(t.getDate()).padStart(2,'0');
+      document.getElementById('docDate').value = iso;
+      setupCanvas();
+      addItem();
+
+      let lastW = window.innerWidth;
+      window.addEventListener('resize', () => {
+        if (window.innerWidth !== lastW) {
+          lastW = window.innerWidth;
+          setupCanvas();
+          hasDrawn = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
